@@ -1,28 +1,54 @@
 import React, { Component } from 'react';
+import  { bindActionCreators } from 'redux';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import * as PlayerActionCreators from '../actions/player';
+
+import Player from '../components/Player';
+import Header from '../components/Header';
+import AddPlayerForm from '../components/AddPlayerForm';
 
 class App extends Component {
-  render() {
-    return(
-      <div className="app">
-        <div className="header">
-          <h1>Scoreboard</h1>
-        </div>
 
+  static propTypes = {
+    players: PropTypes.array.isRequired
+  };
+
+  render() {
+    const { dispatch, players } = this.props;
+    const addPlayer = bindActionCreators(PlayerActionCreators.addPlayer, dispatch);
+    const removePlayer = bindActionCreators(PlayerActionCreators.removePlayer, dispatch);
+    const updatePlayerScore = bindActionCreators(PlayerActionCreators.updatePlayerScore, dispatch);
+
+    const playerComponents= players.map((player, index) => {
+      return (
+        <Player
+          index={index}
+          name={player.name}
+          score={player.score}
+          key={player.name}
+          updatePlayerScore={updatePlayerScore}
+          removePlayer={removePlayer}
+        />
+      );
+    });
+
+    return (
+      <div className="scoreboard">
+        <Header players={players} />
         <div className="players">
-          <div className="player">
-            Arnór Ragnarsson
-          </div>
-          <div className="player-score">
-            <div className="counter">
-              <button className="counter-action decrement"> - </button>
-              <div className="counter-score"> 22 </div>
-              <button className="counter-action increment"> + </button>
-            </div>
-          </div>
+          { playerComponents }
         </div>
+        <AddPlayerForm addPlayer={addPlayer} />
       </div>
     );
   }
 }
 
-export default App;
+const mapStateToProps = state => (
+  {
+    players: state
+  }
+);
+
+export default connect(mapStateToProps)(App);
